@@ -46,11 +46,15 @@ func main() {
 	router.PathPrefix("/").HandlerFunc(server.GetFileEndpoint).Methods("GET")
 	router.PathPrefix("/").HandlerFunc(server.PutFileEndpoint).Methods("PUT")
 	router.PathPrefix("/").HandlerFunc(server.DeleteFileEndpoint).Methods("DELETE")
-	// router.HandleFunc("/API/user/{id}", repo.WithData(handlers.UpdateUserEndpoint)).Methods("PUT")
-	// router.HandleFunc("/API/user/{id}", repo.WithData(handlers.DeleteUserEndpoint)).Methods("DELETE")
+
+	// This sets up the application to serve.
 	go http.ListenAndServe(fmt.Sprintf("%s:%d", *listenAddress, *listenPort), h)
-	// You could do this on like anything.
+
+	// This sets up the tracing for requests.
 	log.Fatal(http.ListenAndServe(":8887", nil)) // For net/trace
+
+	// We should setup an additional GRPC endpoint.
+
 }
 
 func (s *Server) HealthEndpoint(w http.ResponseWriter, r *http.Request) {
