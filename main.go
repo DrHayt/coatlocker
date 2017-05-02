@@ -57,18 +57,19 @@ func main() {
 
 }
 
+// HealthEndpoint is an endpoint to allow for health monitoring.
 func (s *Server) HealthEndpoint(w http.ResponseWriter, r *http.Request) {
 	respond.With(w, r, http.StatusOK, s.BaseDirectory)
 
 }
 
+// DeleteFileEndpoint handles deleting a file if it exists.
 func (s *Server) DeleteFileEndpoint(w http.ResponseWriter, r *http.Request) {
 
-	hasher := sha256.New()
-	hasher.Write([]byte(r.RequestURI))
-	key := hex.EncodeToString(hasher.Sum(nil))
+	key := s.GenKey(r.RequestURI)
+	filepath := s.GenPath(key)
 
-	err := os.Remove(path.Join(s.BaseDirectory, key))
+	err := os.Remove(filepath)
 	if err != nil {
 		respond.With(w, r, http.StatusInternalServerError, err.Error())
 	}
@@ -77,29 +78,35 @@ func (s *Server) DeleteFileEndpoint(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) GetFileEndpoint(w http.ResponseWriter, r *http.Request) {
 
-	hasher := sha256.New()
-	hasher.Write([]byte(r.RequestURI))
-	key := hex.EncodeToString(hasher.Sum(nil))
+	key := s.GenKey(r.RequestURI)
+	filepath := s.GenPath(key)
 
-	file, err := os.Open(path.Join(s.BaseDirectory, key))
+	// Dont try to get a file that does not exists.
+	err := checkFile(filepath)
 	if err != nil {
 		respond.With(w, r, http.StatusInternalServerError, err.Error())
 	}
+
+	// It must exist, so open it up.
+	file, err := os.Open(filepath)
+	if err != nil {
+		respond.With(w, r, http.StatusInternalServerError, err.Error())
+	}
+
+	// Stuff must be good.
 	w.WriteHeader(http.StatusOK)
-	_, err = io.Copy(w, file)
-	if err != nil {
-		respond.With(w, r, http.StatusInternalServerError, err.Error())
-	}
-
+	// Lets stream some bytes.
+	// _, err = io.Copy(w, file)
+	// we dont care if this fails.
+	io.Copy(w, file)
 }
 
 func (s *Server) PutFileEndpoint(w http.ResponseWriter, r *http.Request) {
 
-	hasher := sha256.New()
-	hasher.Write([]byte(r.RequestURI))
-	key := hex.EncodeToString(hasher.Sum(nil))
+	key := s.GenKey(r.RequestURI)
+	filepath := s.GenPath(key)
 
-	file, err := os.Create(path.Join(s.BaseDirectory, key))
+	file, err := os.Create(filepath)
 	if err != nil {
 		respond.With(w, r, http.StatusInternalServerError, err.Error())
 	}
@@ -119,6 +126,30 @@ func (s *Server) Validate() error {
 	return nil
 }
 
+func (s Server) GenKey(URI string) string {
+	hasher := sha256.New()
+	hasher.Write([]byte(URI))
+	key := hex.EncodeToString(hasher.Sum(nil))
+	return (key)
+}
+
+func (s Server) GenPath(Key string) string {
+	return path.Join(s.BaseDirectory, Key)
+}
+
+// Err unless a directory exists.
+func verifyDirectoryExists(path string) error {
+	DirStat, err := os.Stat(path)
+	if err != nil {
+		return err
+	}
+	if !DirStat.IsDir() {
+		return errors.New(fmt.Sprintf("%s: %s", path, "is not a directory"))
+	}
+	return nil
+}
+
+// Err unless a directory exists.
 func checkDir(path string) error {
 	DirStat, err := os.Stat(path)
 	if err != nil {
@@ -130,12 +161,25 @@ func checkDir(path string) error {
 	return nil
 }
 
-func checkFile(path string) error {
-	DirStat, err := os.Stat(path)
+// Err unless a file exists.
+func verifyFileExists(path string) error {
+	FileStat, err := os.Stat(path)
 	if err != nil {
 		return err
 	}
-	if DirStat.IsDir() {
+	if FileStat.IsDir() {
+		return errors.New(fmt.Sprintf("%s: %s", path, "is not a file"))
+	}
+	return nil
+}
+
+// Err unless a file exists.
+func checkFile(path string) error {
+	FileStat, err := os.Stat(path)
+	if err != nil {
+		return err
+	}
+	if FileStat.IsDir() {
 		return errors.New(fmt.Sprintf("%s: %s", path, "is not a file"))
 	}
 	return nil
