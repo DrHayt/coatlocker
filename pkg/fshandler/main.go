@@ -1,64 +1,21 @@
-package main
+package fshandler
 
 import (
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
-	"flag"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"path"
 
 	respond "gopkg.in/matryer/respond.v1"
-
-	hndl "github.com/gorilla/handlers"
-	"github.com/gorilla/mux"
 )
 
+// Server is the struct that represents the server.
 type Server struct {
 	BaseDirectory string
-}
-
-func main() {
-
-	var (
-		baseDirectory = flag.String("basedir", "/tmp", "The directory to use as the base of file uploads/downloads")
-		listenPort    = flag.Int("port", 8443, "The port to listen on")
-		listenAddress = flag.String("address", "127.0.0.1", "The address to listen on")
-	)
-	flag.Parse()
-
-	// Get a copy of the server struct to work with
-	server := Server{BaseDirectory: *baseDirectory}
-
-	// Validate our server config.
-	err := server.Validate()
-	if err != nil {
-		panic("Invalid base directory")
-	}
-
-	// Logging middleware.
-	router := mux.NewRouter()
-	h := hndl.LoggingHandler(os.Stdout, router)
-
-	//Users
-	router.HandleFunc("/health", server.HealthEndpoint).Methods("GET")
-	router.PathPrefix("/").HandlerFunc(server.GetFileEndpoint).Methods("GET")
-	router.PathPrefix("/").HandlerFunc(server.PutFileEndpoint).Methods("PUT")
-	router.PathPrefix("/").HandlerFunc(server.DeleteFileEndpoint).Methods("DELETE")
-
-	// This sets up the application to serve.
-	go http.ListenAndServe(":8887", nil) // For net/trace
-	log.Fatal(http.ListenAndServe(fmt.Sprintf("%s:%d", *listenAddress, *listenPort), h))
-
-	// This sets up the tracing for requests.
-	// log.Fatal(http.ListenAndServe(":8887", nil)) // For net/trace
-
-	// We should setup an additional GRPC endpoint.
-
 }
 
 // HealthEndpoint is an endpoint to allow for health monitoring.
@@ -67,11 +24,11 @@ func (s *Server) HealthEndpoint(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// DeleteFileEndpoint handles deleting a file if it exists.
-func (s *Server) DeleteFileEndpoint(w http.ResponseWriter, r *http.Request) {
+// DeleteEndpoint handles deleting a file if it exists.
+func (s *Server) DeleteEndpoint(w http.ResponseWriter, r *http.Request) {
 
-	key := s.GenKey(r.RequestURI)
-	filepath := s.GenPath(key)
+	key := s.genKey(r.RequestURI)
+	filepath := s.genPath(key)
 
 	// Dont try to get a file that does not exists.
 	err := checkFile(filepath)
@@ -89,10 +46,11 @@ func (s *Server) DeleteFileEndpoint(w http.ResponseWriter, r *http.Request) {
 	respond.WithStatus(w, r, http.StatusOK)
 }
 
-func (s *Server) GetFileEndpoint(w http.ResponseWriter, r *http.Request) {
+// GetEndpoint is the endpoint that does stuff.
+func (s *Server) GetEndpoint(w http.ResponseWriter, r *http.Request) {
 
-	key := s.GenKey(r.RequestURI)
-	filepath := s.GenPath(key)
+	key := s.genKey(r.RequestURI)
+	filepath := s.genPath(key)
 
 	// Dont try to get a file that does not exists.
 	err := checkFile(filepath)
@@ -119,10 +77,11 @@ func (s *Server) GetFileEndpoint(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func (s *Server) PutFileEndpoint(w http.ResponseWriter, r *http.Request) {
+// PutEndpoint is the endpoint that does stuff.
+func (s *Server) PutEndpoint(w http.ResponseWriter, r *http.Request) {
 
-	key := s.GenKey(r.RequestURI)
-	filepath := s.GenPath(key)
+	key := s.genKey(r.RequestURI)
+	filepath := s.genPath(key)
 
 	// Dont try to put a file that already exists.
 	err := checkFile(filepath)
@@ -146,6 +105,7 @@ func (s *Server) PutFileEndpoint(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// Validate validates that the server is proper.
 func (s *Server) Validate() error {
 	err := checkDir(s.BaseDirectory)
 	if err != nil {
@@ -154,14 +114,15 @@ func (s *Server) Validate() error {
 	return nil
 }
 
-func (s Server) GenKey(URI string) string {
+// Genkey generates a key to be used inside of other function.s
+func (s Server) genKey(URI string) string {
 	hasher := sha256.New()
 	hasher.Write([]byte(URI))
 	key := hex.EncodeToString(hasher.Sum(nil))
 	return (key)
 }
 
-func (s Server) GenPath(Key string) string {
+func (s Server) genPath(Key string) string {
 	return path.Join(s.BaseDirectory, Key)
 }
 

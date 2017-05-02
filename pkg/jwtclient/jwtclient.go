@@ -3,32 +3,9 @@ package jwtclient
 import (
 	"bytes"
 	"crypto/tls"
-	"flag"
-	"fmt"
 	"io"
-	"log"
 	"net/http"
 )
-
-func main() {
-
-	insecure := flag.Bool("i", false, "Insecure, dont validate certificates")
-	username := flag.String("user", "admin", "What username to use")
-	password := flag.String("pass", "admin", "What password to use")
-	url := flag.String("url", "https://authentication.sgtec.io", "Url of authentication service")
-
-	flag.Parse()
-
-	for i := 0; i <= 10; i++ {
-		output, err := Authenticate(*insecure, *url, *username, *password)
-		if err != nil {
-			log.Println("Error authenticating: ", err)
-			continue
-		}
-		fmt.Printf("Response was %s\n", output)
-	}
-
-}
 
 // Authenticate is a jwt wrapper that returns the JWT token to be used on subsequent calls.
 func Authenticate(insecure bool, url, username, password string) (token string, err error) {
