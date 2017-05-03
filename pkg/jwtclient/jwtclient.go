@@ -3,8 +3,10 @@ package jwtclient
 import (
 	"bytes"
 	"crypto/tls"
+	"fmt"
 	"io"
 	"net/http"
+	"strings"
 )
 
 // Authenticate is a jwt wrapper that returns the JWT token to be used on subsequent calls.
@@ -79,5 +81,7 @@ func RetrieveCertificate(insecure bool, url string) (certificate string, err err
 	buffer := &bytes.Buffer{}
 	io.Copy(buffer, webResponse.Body)
 	certificate = buffer.String()
+	certificate = strings.Replace(certificate, "-----BEGIN CERTIFICATE-----", fmt.Sprintf("-----BEGIN CERTIFICATE-----\n"), -1)
+	certificate = strings.Replace(certificate, "-----END CERTIFICATE-----", fmt.Sprintf("\n-----END CERTIFICATE-----\n"), -1)
 	return
 }
