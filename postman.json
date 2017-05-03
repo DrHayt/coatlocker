@@ -1,0 +1,346 @@
+{
+	"variables": [],
+	"info": {
+		"name": "CoatLocker",
+		"_postman_id": "f5c42ec1-abc9-9a8d-32da-93f83b1c866d",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get (Unauthorized)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"tests[\"Status code is 401\"] = responseCode.code === 401;",
+							"",
+							"tests[\"Response time is less than 10ms\"] = responseTime < 10;"
+						]
+					}
+				}
+			],
+			"request": {
+				"url": "http://localhost:8443/test",
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "RAW DATA"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Put (Unauthorized)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"tests[\"Status code is 401\"] = responseCode.code === 401;",
+							"",
+							"tests[\"Response time is less than 10ms\"] = responseTime < 10;"
+						]
+					}
+				}
+			],
+			"request": {
+				"url": "http://localhost:8443/test",
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{{random_body}}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Delete (Unauthorized)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"tests[\"Status code is 401\"] = responseCode.code === 401;",
+							"",
+							"tests[\"Response time is less than 10ms\"] = responseTime < 10;"
+						]
+					}
+				}
+			],
+			"request": {
+				"url": "http://localhost:8443/test",
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "RAW DATA"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Retrieve JWT",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"tests[\"Status code is 200\"] = responseCode.code === 200;",
+							"",
+							"tests[\"Response time is less than 300ms\"] = responseTime < 300;",
+							"",
+							"postman.setEnvironmentVariable(\"jwt\", responseBody);",
+							""
+						]
+					}
+				}
+			],
+			"request": {
+				"url": "https://authentication.sgtec.io",
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Basic YWRtaW46YWRtaW4=",
+						"description": ""
+					}
+				],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Get (should fail)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"tests[\"Status code is 404\"] = responseCode.code === 404;",
+							"",
+							"tests[\"Response time is less than 20ms\"] = responseTime < 20;"
+						]
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"var text = \"\";",
+							"var possible = \"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789\";",
+							"for( var i=0; i < 50; i++ ){",
+							"    text += possible.charAt(Math.floor(Math.random() * possible.length));",
+							"}",
+							"",
+							"postman.setEnvironmentVariable(\"random_body\", text);",
+							""
+						]
+					}
+				}
+			],
+			"request": {
+				"url": "http://localhost:8443/test",
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt}}",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "RAW DATA"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Put",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"tests[\"Status code is 201\"] = responseCode.code === 201;",
+							"",
+							"tests[\"Response time is less than 10ms\"] = responseTime < 10;"
+						]
+					}
+				}
+			],
+			"request": {
+				"url": "http://localhost:8443/test",
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt}}",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{{random_body}}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Put (should fail)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"tests[\"Status code is 422\"] = responseCode.code === 422;",
+							"",
+							"tests[\"Response time is less than 10ms\"] = responseTime < 10;"
+						]
+					}
+				}
+			],
+			"request": {
+				"url": "http://localhost:8443/test",
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt}}",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{{random_body}}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Get",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"tests[\"Status code is 200\"] = responseCode.code === 200;",
+							"",
+							"tests[\"Response time is less than 10ms\"] = responseTime < 10;",
+							"",
+							"tests[\"Body is correct\"] = responseBody === postman.getEnvironmentVariable(\"random_body\");",
+							""
+						]
+					}
+				}
+			],
+			"request": {
+				"url": "http://localhost:8443/test",
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt}}",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "RAW DATA"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Delete",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"tests[\"Status code is 200\"] = responseCode.code === 200;",
+							"",
+							"tests[\"Response time is less than 10ms\"] = responseTime < 10;"
+						]
+					}
+				}
+			],
+			"request": {
+				"url": "http://localhost:8443/test",
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt}}",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "RAW DATA"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Delete (should fail)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"tests[\"Status code is 404\"] = responseCode.code === 404;",
+							"",
+							"tests[\"Response time is less than 10ms\"] = responseTime < 10;",
+							"",
+							"postman.clearEnvironmentVariable(\"jwt\");",
+							"",
+							"postman.clearEnvironmentVariable(\"random\");"
+						]
+					}
+				}
+			],
+			"request": {
+				"url": "http://localhost:8443/test",
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt}}",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "RAW DATA"
+				},
+				"description": ""
+			},
+			"response": []
+		}
+	]
+}
