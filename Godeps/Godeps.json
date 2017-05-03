@@ -1,0 +1,34 @@
+{
+	"ImportPath": "source.sgpdev.com/tfs/SPINext-App-CoatLocker",
+	"GoVersion": "go1.8",
+	"GodepVersion": "v79",
+	"Packages": [
+		"./..."
+	],
+	"Deps": [
+		{
+			"ImportPath": "github.com/auth0/go-jwt-middleware",
+			"Rev": "5493cabe49f7bfa6e2ec444a09d334d90cd4e2bd"
+		},
+		{
+			"ImportPath": "github.com/dgrijalva/jwt-go",
+			"Comment": "v3.0.0-17-g2268707",
+			"Rev": "2268707a8f0843315e2004ee4f1d021dc08baedf"
+		},
+		{
+			"ImportPath": "github.com/gorilla/handlers",
+			"Comment": "v1.2-4-g13d7309",
+			"Rev": "13d73096a474cac93275c679c7b8a2dc17ddba82"
+		},
+		{
+			"ImportPath": "github.com/gorilla/mux",
+			"Comment": "v1.3.0-6-g4c1c395",
+			"Rev": "4c1c3952b7d9d0a061a3fa7b36fd373ba0398ebc"
+		},
+		{
+			"ImportPath": "gopkg.in/matryer/respond.v1",
+			"Comment": "v1.0.1",
+			"Rev": "7ca2372f541a6f714cc7f2a7118b679795b3952c"
+		}
+	]
+}
