@@ -2,7 +2,7 @@ package main
 
 import "net/http"
 
-type CoatCheck interface {
+type ICoatHandler interface {
 	Validate() error
 	HealthEndpoint(w http.ResponseWriter, r *http.Request)
 	GetEndpoint(w http.ResponseWriter, r *http.Request)
