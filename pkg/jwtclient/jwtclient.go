@@ -3,10 +3,14 @@ package jwtclient
 import (
 	"bytes"
 	"crypto/tls"
+	"crypto/x509"
+	"encoding/pem"
 	"fmt"
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/dgrijalva/jwt-go"
 )
 
 // Authenticate is a jwt wrapper that returns the JWT token to be used on subsequent calls.
@@ -84,4 +88,27 @@ func RetrieveCertificate(insecure bool, url string) (certificate string, err err
 	certificate = strings.Replace(certificate, "-----BEGIN CERTIFICATE-----", fmt.Sprintf("-----BEGIN CERTIFICATE-----\n"), -1)
 	certificate = strings.Replace(certificate, "-----END CERTIFICATE-----", fmt.Sprintf("\n-----END CERTIFICATE-----\n"), -1)
 	return
+}
+
+// RetrieveCertificate is a wrapper to retrieve a certificate from a remote server.
+func KeyFuncClosure(insecure bool, url string) (jwt.Keyfunc, error) {
+
+	certificate, err := RetrieveCertificate(insecure, url)
+	if err != nil {
+		return nil, err
+	}
+
+	// Decode the certificate
+	block, _ := pem.Decode([]byte(certificate))
+	if block == nil {
+		return nil, fmt.Errorf("unable to decode pem encoded certificate")
+	}
+
+	pub, err := x509.ParseCertificate(block.Bytes)
+	// pub, err := x509.ParsePKIXPublicKey(block.Bytes)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse DER encoded public key: " + err.Error())
+	}
+
+	return func(*jwt.Token) (interface{}, error) { return pub.PublicKey, nil }, nil
 }
