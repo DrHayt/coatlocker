@@ -1,8 +1,6 @@
 package main
 
 import (
-	"crypto/x509"
-	"encoding/pem"
 	"flag"
 	"fmt"
 	"log"
@@ -39,38 +37,16 @@ func main() {
 		panic("Invalid base directory")
 	}
 
-	// file, err := os.Open("foo")
-	// if err != nil {
-	// 	panic("Unable to open foo")
-	// }
-	// defer file.Close()
-	// var b bytes.Buffer
-
-	// io.Copy(&b, file)
-
-	signingCertificate, err := jwtclient.RetrieveCertificate(*insecure, *certURL)
+	keyFunc, err := jwtclient.KeyFuncClosure(*insecure, *certURL)
 	if err != nil {
-		panic("Unable to retrieve required public certificate")
-	}
-
-	fmt.Println(signingCertificate)
-
-	block, _ := pem.Decode([]byte(signingCertificate))
-	if block == nil {
-		panic("failed to parse PEM block containing the public key")
-	}
-
-	pub, err := x509.ParseCertificate(block.Bytes)
-	// pub, err := x509.ParsePKIXPublicKey(block.Bytes)
-	if err != nil {
-		panic("failed to parse DER encoded public key: " + err.Error())
+		panic("Unable to create key validation function")
 	}
 
 	// Logging middleware.
 	router := mux.NewRouter()
 	options := jwtmiddleware.Options{}
 	options.SigningMethod = jwt.SigningMethodRS256
-	options.ValidationKeyGetter = func(*jwt.Token) (interface{}, error) { return pub.PublicKey, nil }
+	options.ValidationKeyGetter = keyFunc
 	jwthandler := jwtmiddleware.New(options)
 	// h := jwthandler.HandleFunc(router)
 	h := jwthandler.Handler(router)
