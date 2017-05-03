@@ -9,10 +9,10 @@ import (
 
 	"github.com/auth0/go-jwt-middleware"
 	"github.com/dgrijalva/jwt-go"
-	"github.com/drhayt/coatlocker/pkg/fshandler"
-	"github.com/drhayt/coatlocker/pkg/jwtclient"
 	hndl "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"github.com/safeguardproperties/coatlocker/pkg/fshandler"
+	"github.com/safeguardproperties/coatlocker/pkg/jwtclient"
 )
 
 func main() {

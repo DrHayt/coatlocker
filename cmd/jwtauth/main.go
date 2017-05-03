@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/drhayt/coatlocker/pkg/jwtclient"
+	"github.com/safeguardproperties/coatlocker/pkg/jwtclient"
 )
 
 func main() {
