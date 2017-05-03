@@ -21,7 +21,7 @@ func main() {
 		certURL       = flag.String("certurl", "https://authentication.sgtec.io/Certificate", "The directory to use as the base of file uploads/downloads")
 		baseDirectory = flag.String("basedir", "/tmp", "The directory to use as the base of file uploads/downloads")
 		listenPort    = flag.Int("port", 8443, "The port to listen on")
-		listenAddress = flag.String("address", "127.0.0.1", "The address to listen on")
+		listenAddress = flag.String("address", "0.0.0.0", "The address to listen on")
 		insecure      = flag.Bool("insecure", false, "Do not validate https certificates")
 	)
 	flag.Parse()

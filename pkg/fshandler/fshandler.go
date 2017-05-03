@@ -89,6 +89,8 @@ func (s Server) PutEndpoint(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer file.Close()
+	defer r.Body.Close()
+
 	_, err = io.Copy(file, r.Body)
 	if err != nil {
 		respond.WithStatus(w, r, http.StatusInternalServerError)
