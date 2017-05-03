@@ -19,13 +19,13 @@ type Server struct {
 }
 
 // HealthEndpoint is an endpoint to allow for health monitoring.
-func (s *Server) HealthEndpoint(w http.ResponseWriter, r *http.Request) {
+func (s Server) HealthEndpoint(w http.ResponseWriter, r *http.Request) {
 	respond.WithStatus(w, r, http.StatusOK)
 
 }
 
 // DeleteEndpoint handles deleting a file if it exists.
-func (s *Server) DeleteEndpoint(w http.ResponseWriter, r *http.Request) {
+func (s Server) DeleteEndpoint(w http.ResponseWriter, r *http.Request) {
 
 	key := s.genKey(r.RequestURI)
 	filepath := s.genPath(key)
@@ -47,7 +47,7 @@ func (s *Server) DeleteEndpoint(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetEndpoint is the endpoint that does stuff.
-func (s *Server) GetEndpoint(w http.ResponseWriter, r *http.Request) {
+func (s Server) GetEndpoint(w http.ResponseWriter, r *http.Request) {
 
 	key := s.genKey(r.RequestURI)
 	filepath := s.genPath(key)
@@ -78,7 +78,7 @@ func (s *Server) GetEndpoint(w http.ResponseWriter, r *http.Request) {
 }
 
 // PutEndpoint is the endpoint that does stuff.
-func (s *Server) PutEndpoint(w http.ResponseWriter, r *http.Request) {
+func (s Server) PutEndpoint(w http.ResponseWriter, r *http.Request) {
 
 	key := s.genKey(r.RequestURI)
 	filepath := s.genPath(key)
@@ -106,7 +106,7 @@ func (s *Server) PutEndpoint(w http.ResponseWriter, r *http.Request) {
 }
 
 // Validate validates that the server is proper.
-func (s *Server) Validate() error {
+func (s Server) Validate() error {
 	err := checkDir(s.BaseDirectory)
 	if err != nil {
 		return err
