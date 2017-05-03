@@ -1,10 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"crypto/x509"
 	"encoding/pem"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -12,7 +14,6 @@ import (
 	"github.com/auth0/go-jwt-middleware"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/drhayt/coatlocker/pkg/fshandler"
-	"github.com/drhayt/coatlocker/pkg/jwtclient"
 	hndl "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
@@ -20,11 +21,11 @@ import (
 func main() {
 
 	var (
-		certURL       = flag.String("certurl", "https://authentication.sgtec.io/Certificate", "The directory to use as the base of file uploads/downloads")
+		// certURL       = flag.String("certurl", "https://authentication.sgtec.io/Certificate", "The directory to use as the base of file uploads/downloads")
 		baseDirectory = flag.String("basedir", "/tmp", "The directory to use as the base of file uploads/downloads")
 		listenPort    = flag.Int("port", 8443, "The port to listen on")
 		listenAddress = flag.String("address", "127.0.0.1", "The address to listen on")
-		insecure      = flag.Bool("insecure", false, "Do not validate https certificates")
+		//insecure      = flag.Bool("insecure", false, "Do not validate https certificates")
 	)
 	flag.Parse()
 
@@ -39,17 +40,27 @@ func main() {
 		panic("Invalid base directory")
 	}
 
-	signingCertificate, err := jwtclient.RetrieveCertificate(*insecure, *certURL)
+	file, err := os.Open("foo")
 	if err != nil {
-		panic("Unable to retrieve required public certificate")
+		panic("Unable to open foo")
 	}
+	defer file.Close()
+	var b bytes.Buffer
 
-	block, _ := pem.Decode([]byte(signingCertificate))
+	io.Copy(&b, file)
+
+	// signingCertificate, err := jwtclient.RetrieveCertificate(*insecure, *certURL)
+	// if err != nil {
+	// 	panic("Unable to retrieve required public certificate")
+	// }
+
+	block, _ := pem.Decode(b.Bytes())
 	if block == nil {
 		panic("failed to parse PEM block containing the public key")
 	}
 
-	pub, err := x509.ParsePKIXPublicKey(block.Bytes)
+	pub, err := x509.ParseCertificate(block.Bytes)
+	// pub, err := x509.ParsePKIXPublicKey(block.Bytes)
 	if err != nil {
 		panic("failed to parse DER encoded public key: " + err.Error())
 	}
@@ -58,7 +69,7 @@ func main() {
 	router := mux.NewRouter()
 	options := jwtmiddleware.Options{}
 	options.SigningMethod = jwt.SigningMethodRS256
-	options.ValidationKeyGetter = func(*jwt.Token) (interface{}, error) { return pub, nil }
+	options.ValidationKeyGetter = func(*jwt.Token) (interface{}, error) { return pub.PublicKey, nil }
 	jwthandler := jwtmiddleware.New(options)
 	// h := jwthandler.HandleFunc(router)
 	h := jwthandler.Handler(router)
