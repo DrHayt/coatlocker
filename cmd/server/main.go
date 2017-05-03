@@ -37,19 +37,24 @@ func main() {
 		panic("Invalid base directory")
 	}
 
+	// Get a closure to use with the jwt stuff.
 	keyFunc, err := jwtclient.KeyFuncClosure(*insecure, *certURL)
 	if err != nil {
 		panic("Unable to create key validation function")
 	}
 
-	// Logging middleware.
+	// middleware order from innermost to outermost.
 	router := mux.NewRouter()
-	options := jwtmiddleware.Options{}
-	options.SigningMethod = jwt.SigningMethodRS256
-	options.ValidationKeyGetter = keyFunc
+	// Setup jwt middleware.
+	options := jwtmiddleware.Options{
+		SigningMethod:       jwt.SigningMethodRS256,
+		ValidationKeyGetter: keyFunc,
+	}
 	jwthandler := jwtmiddleware.New(options)
-	// h := jwthandler.HandleFunc(router)
+
+	// Wrap the router with the jwt handler.
 	h := jwthandler.Handler(router)
+	// Wrap a logger around everything.
 	h = hndl.LoggingHandler(os.Stdout, h)
 
 	// CoatLocker
@@ -58,13 +63,6 @@ func main() {
 	router.PathPrefix("/").HandlerFunc(server.PutEndpoint).Methods("PUT")
 	router.PathPrefix("/").HandlerFunc(server.DeleteEndpoint).Methods("DELETE")
 
-	// This sets up the application to serve.
-	go http.ListenAndServe(":8887", nil) // For net/trace
 	log.Fatal(http.ListenAndServe(fmt.Sprintf("%s:%d", *listenAddress, *listenPort), h))
-
-	// This sets up the tracing for requests.
-	// log.Fatal(http.ListenAndServe(":8887", nil)) // For net/trace
-
-	// We should setup an additional GRPC endpoint.
 
 }
