@@ -1,13 +1,18 @@
 package main
 
 import (
+	"crypto/x509"
+	"encoding/pem"
 	"flag"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 
+	"github.com/auth0/go-jwt-middleware"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/drhayt/coatlocker/pkg/fshandler"
+	"github.com/drhayt/coatlocker/pkg/jwtclient"
 	hndl "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
@@ -15,14 +20,18 @@ import (
 func main() {
 
 	var (
+		certURL       = flag.String("certurl", "https://authentication.sgtec.io/Certificate", "The directory to use as the base of file uploads/downloads")
 		baseDirectory = flag.String("basedir", "/tmp", "The directory to use as the base of file uploads/downloads")
 		listenPort    = flag.Int("port", 8443, "The port to listen on")
 		listenAddress = flag.String("address", "127.0.0.1", "The address to listen on")
+		insecure      = flag.Bool("insecure", false, "Do not validate https certificates")
 	)
 	flag.Parse()
 
+	var server ICoatHandler
+
 	// Get a copy of the server struct to work with
-	server := fshandler.Server{BaseDirectory: *baseDirectory}
+	server = fshandler.Server{BaseDirectory: *baseDirectory}
 
 	// Validate our server config.
 	err := server.Validate()
@@ -30,11 +39,32 @@ func main() {
 		panic("Invalid base directory")
 	}
 
+	signingCertificate, err := jwtclient.RetrieveCertificate(*insecure, *certURL)
+	if err != nil {
+		panic("Unable to retrieve required public certificate")
+	}
+
+	block, _ := pem.Decode([]byte(signingCertificate))
+	if block == nil {
+		panic("failed to parse PEM block containing the public key")
+	}
+
+	pub, err := x509.ParsePKIXPublicKey(block.Bytes)
+	if err != nil {
+		panic("failed to parse DER encoded public key: " + err.Error())
+	}
+
 	// Logging middleware.
 	router := mux.NewRouter()
-	h := hndl.LoggingHandler(os.Stdout, router)
+	options := jwtmiddleware.Options{}
+	options.SigningMethod = jwt.SigningMethodRS256
+	options.ValidationKeyGetter = func(*jwt.Token) (interface{}, error) { return pub, nil }
+	jwthandler := jwtmiddleware.New(options)
+	// h := jwthandler.HandleFunc(router)
+	h := jwthandler.Handler(router)
+	h = hndl.LoggingHandler(os.Stdout, h)
 
-	//Users
+	// CoatLocker
 	router.HandleFunc("/health", server.HealthEndpoint).Methods("GET")
 	router.PathPrefix("/").HandlerFunc(server.GetEndpoint).Methods("GET")
 	router.PathPrefix("/").HandlerFunc(server.PutEndpoint).Methods("PUT")
