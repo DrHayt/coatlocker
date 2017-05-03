@@ -2,8 +2,8 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"os"
 
@@ -20,9 +20,11 @@ func main() {
 	var (
 		certURL       = flag.String("certurl", "https://authentication.sgtec.io/Certificate", "The directory to use as the base of file uploads/downloads")
 		baseDirectory = flag.String("basedir", "/tmp", "The directory to use as the base of file uploads/downloads")
-		listenPort    = flag.Int("port", 8443, "The port to listen on")
+		listenPort    = flag.String("port", "8443", "The port to listen on")
 		listenAddress = flag.String("address", "0.0.0.0", "The address to listen on")
 		insecure      = flag.Bool("insecure", false, "Do not validate https certificates")
+		certPath      = flag.String("certpath", "server.crt", "The path to the certificate")
+		keyPath       = flag.String("pathpath", "server.key", "The path to the key")
 	)
 	flag.Parse()
 
@@ -63,6 +65,6 @@ func main() {
 	router.PathPrefix("/").HandlerFunc(server.PutEndpoint).Methods("PUT")
 	router.PathPrefix("/").HandlerFunc(server.DeleteEndpoint).Methods("DELETE")
 
-	log.Fatal(http.ListenAndServe(fmt.Sprintf("%s:%d", *listenAddress, *listenPort), h))
+	log.Fatal(http.ListenAndServeTLS(net.JoinHostPort(*listenAddress, *listenPort), *certPath, *keyPath, h))
 
 }
