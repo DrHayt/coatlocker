@@ -83,16 +83,9 @@ func (s Server) PutEndpoint(w http.ResponseWriter, r *http.Request) {
 	key := s.genKey(r.RequestURI)
 	filepath := s.genPath(key)
 
-	// Dont try to put a file that already exists.
-	err := checkFile(filepath)
-	if err == nil {
-		respond.WithStatus(w, r, http.StatusUnprocessableEntity)
-		return
-	}
-
-	file, err := os.Create(filepath)
+	file, err := os.OpenFile(filepath, os.O_RDWR|os.O_CREATE|os.O_EXCL, 0666)
 	if err != nil {
-		respond.WithStatus(w, r, http.StatusInternalServerError)
+		respond.WithStatus(w, r, http.StatusUnprocessableEntity)
 		return
 	}
 	defer file.Close()
