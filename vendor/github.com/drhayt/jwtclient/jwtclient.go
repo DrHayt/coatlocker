@@ -124,7 +124,7 @@ func KeyFuncFromPEMFile(pemFile string) (jwt.Keyfunc, error) {
 
 	defer certificateFile.Close()
 
-	var certificate *bytes.Buffer
+	certificate := bytes.NewBuffer(nil)
 
 	_, err = io.Copy(certificate, certificateFile)
 	if err != nil {
