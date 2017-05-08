@@ -1,7 +1,5 @@
 FROM golang:alpine
 
-#  RUN apk add --no-cache go
-
 ADD . /go/src/github.com/drhayt/coatlocker
 
 RUN export GOPATH=/go && \
