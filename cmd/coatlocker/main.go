@@ -18,11 +18,9 @@ import (
 func main() {
 
 	var (
-		certURL       = flag.String("certurl", "https://authentication.sgtec.io/Certificate", "The directory to use as the base of file uploads/downloads")
 		baseDirectory = flag.String("basedir", "/tmp", "The directory to use as the base of file uploads/downloads")
 		listenPort    = flag.String("port", "8443", "The port to listen on")
 		listenAddress = flag.String("address", "0.0.0.0", "The address to listen on")
-		insecure      = flag.Bool("insecure", false, "Do not validate https certificates")
 		certPath      = flag.String("certpath", "server.crt", "The path to the certificate")
 		keyPath       = flag.String("keypath", "server.key", "The path to the key")
 		jwtCertPath   = flag.String("jwtcertpath", "jwt.crt", "The path to the PEM encoded JWT certificate to validate against")
@@ -46,7 +44,7 @@ func main() {
 	}
 
 	// Get a closure to use with the jwt stuff.
-	keyFunc, err := jwtclient.KeyFuncClosure(*insecure, *certURL)
+	keyFunc, err := jwtclient.KeyFuncFromPEMFile(*jwtCertPath)
 	if err != nil {
 		panic("Unable to create key validation function")
 	}
