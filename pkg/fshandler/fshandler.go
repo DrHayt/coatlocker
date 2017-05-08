@@ -3,7 +3,6 @@ package fshandler
 import (
 	"crypto/sha256"
 	"encoding/hex"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -16,6 +15,9 @@ import (
 // Server is the struct that represents the server.
 type Server struct {
 	BaseDirectory string
+	CertFile      string
+	KeyFile       string
+	JWTCertFile   string
 }
 
 // HealthEndpoint is an endpoint to allow for health monitoring.
@@ -106,6 +108,22 @@ func (s Server) Validate() error {
 	if err != nil {
 		return err
 	}
+
+	err = checkFile(s.CertFile)
+	if err != nil {
+		return err
+	}
+
+	err = checkFile(s.KeyFile)
+	if err != nil {
+		return err
+	}
+
+	err = checkFile(s.JWTCertFile)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -128,7 +146,7 @@ func verifyDirectoryExists(path string) error {
 		return err
 	}
 	if !DirStat.IsDir() {
-		return errors.New(fmt.Sprintf("%s: %s", path, "is not a directory"))
+		return fmt.Errorf("%s: %s", path, "is not a directory")
 	}
 	return nil
 }
@@ -140,7 +158,7 @@ func checkDir(path string) error {
 		return err
 	}
 	if !DirStat.IsDir() {
-		return errors.New(fmt.Sprintf("%s: %s", path, "is not a directory"))
+		return fmt.Errorf("%s: %s", path, "is not a directory")
 	}
 	return nil
 }
@@ -152,7 +170,7 @@ func verifyFileExists(path string) error {
 		return err
 	}
 	if FileStat.IsDir() {
-		return errors.New(fmt.Sprintf("%s: %s", path, "is not a file"))
+		return fmt.Errorf("%s: %s", path, "is a directory, not a file")
 	}
 	return nil
 }
@@ -161,10 +179,10 @@ func verifyFileExists(path string) error {
 func checkFile(path string) error {
 	FileStat, err := os.Stat(path)
 	if err != nil {
-		return err
+		return fmt.Errorf("Unable to access %s: %s", path, err)
 	}
 	if FileStat.IsDir() {
-		return errors.New(fmt.Sprintf("%s: %s", path, "is not a file"))
+		return fmt.Errorf("%s: %s", path, "is a directory, not a file")
 	}
 	return nil
 }
