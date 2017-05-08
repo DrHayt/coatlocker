@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/dgrijalva/jwt-go"
@@ -90,8 +91,8 @@ func RetrieveCertificate(insecure bool, url string) (certificate string, err err
 	return
 }
 
-// RetrieveCertificate is a wrapper to retrieve a certificate from a remote server.
-func KeyFuncClosure(insecure bool, url string) (jwt.Keyfunc, error) {
+// KeyFuncFromURL returns a closure which in turn returns the public part of the JWT certificate from a URL
+func KeyFuncFromURL(insecure bool, url string) (jwt.Keyfunc, error) {
 
 	certificate, err := RetrieveCertificate(insecure, url)
 	if err != nil {
@@ -100,6 +101,38 @@ func KeyFuncClosure(insecure bool, url string) (jwt.Keyfunc, error) {
 
 	// Decode the certificate
 	block, _ := pem.Decode([]byte(certificate))
+	if block == nil {
+		return nil, fmt.Errorf("unable to decode pem encoded certificate")
+	}
+
+	pub, err := x509.ParseCertificate(block.Bytes)
+	// pub, err := x509.ParsePKIXPublicKey(block.Bytes)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse DER encoded public key: " + err.Error())
+	}
+
+	return func(*jwt.Token) (interface{}, error) { return pub.PublicKey, nil }, nil
+}
+
+// KeyFuncFromPEMFile returns a closure which in turn returns the public part of the JWT certificate from a file.
+func KeyFuncFromPEMFile(pemFile string) (jwt.Keyfunc, error) {
+
+	certificateFile, err := os.Open(pemFile)
+	if err != nil {
+		return nil, err
+	}
+
+	defer certificateFile.Close()
+
+	var certificate *bytes.Buffer
+
+	_, err = io.Copy(certificate, certificateFile)
+	if err != nil {
+		return nil, err
+	}
+
+	// Decode the certificate
+	block, _ := pem.Decode(certificate.Bytes())
 	if block == nil {
 		return nil, fmt.Errorf("unable to decode pem encoded certificate")
 	}
