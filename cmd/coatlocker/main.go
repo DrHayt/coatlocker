@@ -25,18 +25,24 @@ func main() {
 		insecure      = flag.Bool("insecure", false, "Do not validate https certificates")
 		certPath      = flag.String("certpath", "server.crt", "The path to the certificate")
 		keyPath       = flag.String("keypath", "server.key", "The path to the key")
+		jwtCertPath   = flag.String("jwtcertpath", "jwt.crt", "The path to the PEM encoded JWT certificate to validate against")
 	)
 	flag.Parse()
 
 	var server ICoatHandler
 
 	// Get a copy of the server struct to work with
-	server = fshandler.Server{BaseDirectory: *baseDirectory}
+	server = fshandler.Server{
+		BaseDirectory: *baseDirectory,
+		CertFile:      *certPath,
+		KeyFile:       *keyPath,
+		JWTCertFile:   *jwtCertPath,
+	}
 
 	// Validate our server config.
 	err := server.Validate()
 	if err != nil {
-		panic("Invalid base directory")
+		panic(err)
 	}
 
 	// Get a closure to use with the jwt stuff.
