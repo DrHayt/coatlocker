@@ -24,7 +24,7 @@ func main() {
 		listenAddress = flag.String("address", "0.0.0.0", "The address to listen on")
 		insecure      = flag.Bool("insecure", false, "Do not validate https certificates")
 		certPath      = flag.String("certpath", "server.crt", "The path to the certificate")
-		keyPath       = flag.String("pathpath", "server.key", "The path to the key")
+		keyPath       = flag.String("keypath", "server.key", "The path to the key")
 	)
 	flag.Parse()
 
