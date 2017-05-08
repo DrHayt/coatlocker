@@ -10,7 +10,7 @@ import (
 	"github.com/auth0/go-jwt-middleware"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/drhayt/coatlocker/pkg/fshandler"
-	"github.com/drhayt/coatlocker/pkg/jwtclient"
+	"github.com/drhayt/jwtclient"
 	hndl "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
