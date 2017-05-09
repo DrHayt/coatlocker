@@ -23,7 +23,7 @@
 				}
 			],
 			"request": {
-				"url": "https://localhost:8443/test",
+				"url": "https://{{coatlocker_host}}:{{coatlocker_port}}/test",
 				"method": "GET",
 				"header": [],
 				"body": {
@@ -50,7 +50,7 @@
 				}
 			],
 			"request": {
-				"url": "https://localhost:8443/test",
+				"url": "https://{{coatlocker_host}}:{{coatlocker_port}}/test",
 				"method": "PUT",
 				"header": [],
 				"body": {
@@ -77,7 +77,7 @@
 				}
 			],
 			"request": {
-				"url": "https://localhost:8443/test",
+				"url": "https://{{coatlocker_host}}:{{coatlocker_port}}/test",
 				"method": "DELETE",
 				"header": [],
 				"body": {
@@ -153,7 +153,7 @@
 				}
 			],
 			"request": {
-				"url": "https://localhost:8443/test",
+				"url": "https://{{coatlocker_host}}:{{coatlocker_port}}/test",
 				"method": "GET",
 				"header": [
 					{
@@ -186,7 +186,7 @@
 				}
 			],
 			"request": {
-				"url": "https://localhost:8443/test",
+				"url": "https://{{coatlocker_host}}:{{coatlocker_port}}/test",
 				"method": "PUT",
 				"header": [
 					{
@@ -219,7 +219,7 @@
 				}
 			],
 			"request": {
-				"url": "https://localhost:8443/test",
+				"url": "https://{{coatlocker_host}}:{{coatlocker_port}}/test",
 				"method": "PUT",
 				"header": [
 					{
@@ -255,7 +255,7 @@
 				}
 			],
 			"request": {
-				"url": "https://localhost:8443/test",
+				"url": "https://{{coatlocker_host}}:{{coatlocker_port}}/test",
 				"method": "GET",
 				"header": [
 					{
@@ -288,7 +288,7 @@
 				}
 			],
 			"request": {
-				"url": "https://localhost:8443/test",
+				"url": "https://{{coatlocker_host}}:{{coatlocker_port}}/test",
 				"method": "DELETE",
 				"header": [
 					{
@@ -325,7 +325,7 @@
 				}
 			],
 			"request": {
-				"url": "https://localhost:8443/test",
+				"url": "https://{{coatlocker_host}}:{{coatlocker_port}}/test",
 				"method": "DELETE",
 				"header": [
 					{
@@ -338,6 +338,30 @@
 					"mode": "raw",
 					"raw": "RAW DATA"
 				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "health check",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"tests[\"Status code is 200\"] = responseCode.code === 200;",
+							"",
+							"tests[\"Response time is less than 10ms\"] = responseTime < 10;"
+						]
+					}
+				}
+			],
+			"request": {
+				"url": "https://{{coatlocker_host}}:{{coatlocker_port}}/health",
+				"method": "GET",
+				"header": [],
+				"body": {},
 				"description": ""
 			},
 			"response": []
