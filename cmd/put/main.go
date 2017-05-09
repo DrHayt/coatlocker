@@ -13,11 +13,11 @@ import (
 
 func main() {
 
-	insecure := flag.Bool("insecure", false, "Insecure, dont validate certificates")
-	username := flag.String("user", "admin", "What username to use")
-	password := flag.String("pass", "admin", "What password to use")
-	authurl := flag.String("authurl", "https://authentication.sgtec.io", "Url of authentication service")
-	svcurl := flag.String("svcurl", "https://coatlocker.sgtec.io", "Url of coatlocker")
+	insecure := flag.Bool("insecure", len(os.Getenv("COATLOCKER_INSECURE")) != 0, "Insecure, dont validate certificates")
+	username := flag.String("user", os.Getenv("COATLOCKER_USERNAME"), "What username to use")
+	password := flag.String("pass", os.Getenv("COATLOCKER_PASSWORD"), "What password to use")
+	authurl := flag.String("authurl", os.Getenv("COATLOCKER_AUTHURL"), "Url of authentication service")
+	svcurl := flag.String("svcurl", os.Getenv("COATLOCKER_SVCURL"), "Url of coatlocker")
 	file := flag.String("file", "", "file to upload")
 	key := flag.String("key", "", "upload key")
 
@@ -31,6 +31,26 @@ func main() {
 	if len(*key) == 0 {
 		flag.Usage()
 		os.Exit(2)
+	}
+
+	if len(*svcurl) == 0 {
+		flag.Usage()
+		os.Exit(3)
+	}
+
+	if len(*authurl) == 0 {
+		flag.Usage()
+		os.Exit(4)
+	}
+
+	if len(*username) == 0 {
+		flag.Usage()
+		os.Exit(5)
+	}
+
+	if len(*password) == 0 {
+		flag.Usage()
+		os.Exit(6)
 	}
 
 	token, err := jwtclient.Authenticate(*insecure, *authurl, *username, *password)
@@ -92,7 +112,7 @@ func PutFileWithAuth(insecure bool, url, file, key, token string) error {
 	case http.StatusCreated:
 		return nil
 	default:
-		return fmt.Errorf("Unexpected code received: %d", webResponse.StatusCode)
+		return fmt.Errorf("Unexpected code received: %s", webResponse.Status)
 	}
 
 }
