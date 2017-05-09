@@ -17,7 +17,7 @@
 		},
 		{
 			"ImportPath": "github.com/drhayt/jwtclient",
-			"Rev": "23bd591be31860599f8fd6b7eef0188e00ff3bd7"
+			"Rev": "cb82d89ea89f3cb2bd42f0e899ee6a1720bad84d"
 		},
 		{
 			"ImportPath": "github.com/gorilla/handlers",

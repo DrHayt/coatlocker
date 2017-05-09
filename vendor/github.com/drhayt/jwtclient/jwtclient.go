@@ -45,12 +45,23 @@ func Authenticate(insecure bool, url, username, password string) (token string, 
 	if err != nil {
 		return
 	}
-
 	defer webResponse.Body.Close()
+
+	// Get the body
 	buffer := &bytes.Buffer{}
 	io.Copy(buffer, webResponse.Body)
 	token = buffer.String()
-	return
+
+	switch webResponse.StatusCode {
+	case http.StatusOK:
+		return
+	case http.StatusUnauthorized:
+		return "", fmt.Errorf("unauthorized")
+	case http.StatusInternalServerError:
+		return "", fmt.Errorf("server Error")
+	default:
+		return "", fmt.Errorf("unexpected code received: %s", webResponse.Status)
+	}
 }
 
 // RetrieveCertificate is a wrapper to retrieve a certificate from a remote server.
