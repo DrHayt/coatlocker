@@ -30,6 +30,11 @@
 			"Rev": "4c1c3952b7d9d0a061a3fa7b36fd373ba0398ebc"
 		},
 		{
+			"ImportPath": "github.com/justinas/alice",
+			"Comment": "1.0.0-16-g1051eaf",
+			"Rev": "1051eaf52fcafdd87ead59d28b065f1fcb8274ec"
+		},
+		{
 			"ImportPath": "gopkg.in/matryer/respond.v1",
 			"Comment": "v1.0.1",
 			"Rev": "7ca2372f541a6f714cc7f2a7118b679795b3952c"
