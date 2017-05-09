@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/auth0/go-jwt-middleware"
 	"github.com/dgrijalva/jwt-go"
@@ -13,6 +14,7 @@ import (
 	"github.com/drhayt/jwtclient"
 	hndl "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"github.com/justinas/alice"
 )
 
 func main() {
@@ -58,17 +60,26 @@ func main() {
 	}
 	jwthandler := jwtmiddleware.New(options)
 
-	// Wrap the router with the jwt handler.
-	h := jwthandler.Handler(router)
-	// Wrap a logger around everything.
-	h = hndl.LoggingHandler(os.Stdout, h)
+	chain := alice.New(timeoutHandler, recoveryHandler, loggingHandler, jwthandler.Handler)
 
 	// CoatLocker
 	router.HandleFunc("/health", server.HealthEndpoint).Methods("GET")
-	router.PathPrefix("/").HandlerFunc(server.GetEndpoint).Methods("GET")
-	router.PathPrefix("/").HandlerFunc(server.PutEndpoint).Methods("PUT")
-	router.PathPrefix("/").HandlerFunc(server.DeleteEndpoint).Methods("DELETE")
+	router.PathPrefix("/").Handler(chain.ThenFunc(server.GetEndpoint)).Methods("GET")
+	router.PathPrefix("/").Handler(chain.ThenFunc(server.PutEndpoint)).Methods("PUT")
+	router.PathPrefix("/").Handler(chain.ThenFunc(server.DeleteEndpoint)).Methods("DELETE")
 
-	log.Fatal(http.ListenAndServeTLS(net.JoinHostPort(*listenAddress, *listenPort), *certPath, *keyPath, h))
+	log.Fatal(http.ListenAndServeTLS(net.JoinHostPort(*listenAddress, *listenPort), *certPath, *keyPath, router))
 
+}
+
+func timeoutHandler(h http.Handler) http.Handler {
+	return http.TimeoutHandler(h, 90*time.Second, "timed out")
+}
+
+func recoveryHandler(h http.Handler) http.Handler {
+	return hndl.RecoveryHandler()(h)
+}
+
+func loggingHandler(h http.Handler) http.Handler {
+	return hndl.LoggingHandler(os.Stdout, h)
 }
