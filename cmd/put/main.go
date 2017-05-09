@@ -13,13 +13,15 @@ import (
 
 func main() {
 
-	insecure := flag.Bool("insecure", len(os.Getenv("COATLOCKER_INSECURE")) != 0, "Insecure, dont validate certificates")
-	username := flag.String("user", os.Getenv("COATLOCKER_USERNAME"), "What username to use")
-	password := flag.String("pass", os.Getenv("COATLOCKER_PASSWORD"), "What password to use")
-	authurl := flag.String("authurl", os.Getenv("COATLOCKER_AUTHURL"), "Url of authentication service")
-	svcurl := flag.String("svcurl", os.Getenv("COATLOCKER_SVCURL"), "Url of coatlocker")
-	file := flag.String("file", "", "file to upload")
-	key := flag.String("key", "", "upload key")
+	var (
+		insecure = flag.Bool("insecure", len(os.Getenv("COATLOCKER_INSECURE")) != 0, "COATLOCKER_INSECURE: Insecure, dont validate certificates")
+		username = flag.String("user", os.Getenv("COATLOCKER_USERNAME"), "COATLOCKER_USERNAME: What username to use")
+		password = flag.String("pass", os.Getenv("COATLOCKER_PASSWORD"), "COATLOCKER_PASSWORD: What password to use")
+		authurl  = flag.String("authurl", os.Getenv("COATLOCKER_AUTHURL"), "COATLOCKER_AUTHURL: Url of authentication service")
+		svcurl   = flag.String("svcurl", os.Getenv("COATLOCKER_SVCURL"), "COATLOCKER_SVCURL: Url of coatlocker")
+		file     = flag.String("file", "", "file to upload")
+		key      = flag.String("key", "", "upload key")
+	)
 
 	flag.Parse()
 
