@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 
 	"github.com/dgrijalva/jwt-go"
 )
@@ -171,4 +172,25 @@ func KeyFuncFromPEMBytes(pemBytes []byte) (jwt.Keyfunc, error) {
 	}
 
 	return func(*jwt.Token) (interface{}, error) { return pub.PublicKey, nil }, nil
+}
+
+// KeyFuncFromPEMFile returns a closure which in turn returns the public part of the JWT certificate from a file.
+func KeyFuncFromPEMFile(fileLocation string) (jwt.Keyfunc, error) {
+
+	pemFile, err := os.Open(fileLocation)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to open file \"%s\", error: %s", fileLocation, err)
+	}
+
+	defer pemFile.Close()
+
+	pemBytes := bytes.NewBuffer(nil)
+
+	_, err = io.Copy(pemBytes, pemFile)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to read file \"%s\", error: %s", fileLocation, err)
+	}
+
+	return KeyFuncFromPEMBytes(pemBytes.Bytes())
+
 }

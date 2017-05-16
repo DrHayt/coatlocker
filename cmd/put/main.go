@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"os"
 
+	"io/ioutil"
+
 	"github.com/drhayt/jwtclient"
 )
 
@@ -19,6 +21,7 @@ func main() {
 		password = flag.String("pass", os.Getenv("COATLOCKER_PASSWORD"), "COATLOCKER_PASSWORD: What password to use")
 		authurl  = flag.String("authurl", os.Getenv("COATLOCKER_AUTHURL"), "COATLOCKER_AUTHURL: Url of authentication service")
 		svcurl   = flag.String("svcurl", os.Getenv("COATLOCKER_SVCURL"), "COATLOCKER_SVCURL: Url of coatlocker")
+		jwtCert  = flag.String("jwtcert", os.Getenv("COATLOCKER_JWTCERTPATH"), "COATLOCKER_JWTCERT: The certificate expected to be used to authenticate the JWT.")
 		file     = flag.String("file", "", "file to upload")
 		key      = flag.String("key", "", "upload key")
 	)
@@ -55,7 +58,25 @@ func main() {
 		os.Exit(6)
 	}
 
-	token, err := jwtclient.Authenticate(*insecure, *authurl, *username, *password)
+	jwtBytes, err := ioutil.ReadFile(*jwtCert)
+	if err != nil {
+		log.Fatalf("Unable to read JWT cert file: %s, Error: %s", *jwtCert, err)
+	}
+
+	jwtConfig := jwtclient.Config{
+		Username:     *username,
+		Password:     *password,
+		URL:          *authurl,
+		Insecure:     *insecure,
+		JWTCertBytes: jwtBytes,
+	}
+
+	jwtClient, err := jwtclient.New(&jwtConfig)
+	if err != nil {
+		log.Fatalf("Unable to create jwt client: %s", err)
+	}
+
+	token, err := jwtClient.RetrieveToken()
 	if err != nil {
 		log.Fatalln("Error authenticating: ", err)
 	}

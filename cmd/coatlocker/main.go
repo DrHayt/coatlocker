@@ -2,11 +2,14 @@ package main
 
 import (
 	"flag"
+	"io"
 	"log"
 	"net"
 	"net/http"
 	"os"
 	"time"
+
+	"bytes"
 
 	"github.com/auth0/go-jwt-middleware"
 	"github.com/dgrijalva/jwt-go"
@@ -20,14 +23,16 @@ import (
 func main() {
 
 	var (
-		baseDirectory = flag.String("basedir", "/tmp", "The directory to use as the base of file uploads/downloads")
-		listenPort    = flag.String("port", "8443", "The port to listen on")
-		listenAddress = flag.String("address", "0.0.0.0", "The address to listen on")
-		certPath      = flag.String("certpath", "server.crt", "The path to the certificate")
-		keyPath       = flag.String("keypath", "server.key", "The path to the key")
-		jwtCertPath   = flag.String("jwtcertpath", "jwt.crt", "The path to the PEM encoded JWT certificate to validate against")
+		baseDirectory = flag.String("basedir", os.Getenv("COATLOCKER_BASEDIR"), "The directory to use as the base of file uploads/downloads")
+		listenPort    = flag.String("port", os.Getenv("COATLOCKER_PORT"), "The port to listen on")
+		listenAddress = flag.String("address", os.Getenv("COATLOCKER_ADDRESS"), "The address to listen on")
+		certPath      = flag.String("certpath", os.Getenv("COATLOCKER_CERTPATH"), "The path to the certificate")
+		keyPath       = flag.String("keypath", os.Getenv("COATLOCKER_KEYPATH"), "The path to the key")
+		jwtCertPath   = flag.String("jwtcertpath", os.Getenv("COATLOCKER_JWTCERTPATH"), "The path to the PEM encoded JWT certificate to validate against")
 	)
 	flag.Parse()
+
+	// FIXME:   Do more argument checking stuff.
 
 	var server ICoatHandler
 
@@ -45,8 +50,20 @@ func main() {
 		panic(err)
 	}
 
+	pemBytes := bytes.NewBuffer(nil)
+
+	certFile, err := os.Open(*jwtCertPath)
+	if err != nil {
+		log.Fatalf("Unale to open certificate file: %s, error: %s", *jwtCertPath, err)
+	}
+
+	_, err = io.Copy(pemBytes, certFile)
+	if err != nil {
+		log.Fatalf("Unable to extract certificate: %s", err)
+	}
+
 	// Get a closure to use with the jwt stuff.
-	keyFunc, err := jwtclient.KeyFuncFromPEMFile(*jwtCertPath)
+	keyFunc, err := jwtclient.KeyFuncFromPEMBytes(pemBytes.Bytes())
 	if err != nil {
 		panic("Unable to create key validation function")
 	}
